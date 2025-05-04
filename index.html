@@ -1,1 +1,661 @@
-<p>hello world</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Percentage Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+        
+        .heart-beat {
+            animation: heartBeat 1.3s ease infinite;
+        }
+        
+        .progress-bar {
+            transition: width 2s ease-in-out;
+        }
+        
+        .floating-hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .heart {
+            position: absolute;
+            opacity: 0;
+            animation: float-up 4s ease-in forwards;
+        }
+        
+        @keyframes float-up {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .photo-upload {
+            display: none;
+        }
+        
+        .photo-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .couple-photos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        #result-screenshot {
+            max-width: 100%;
+            border-radius: 10px;
+            display: none;
+            margin: 20px auto;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .share-button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .share-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .share-facebook {
+            background-color: #3b5998;
+        }
+        
+        .share-twitter {
+            background-color: #1DA1F2;
+        }
+        
+        .share-whatsapp {
+            background-color: #25D366;
+        }
+    </style>
+</head>
+<body class="bg-pink-50 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-md relative" id="calculator-container">
+        <!-- Floating hearts container -->
+        <div class="floating-hearts" id="hearts-container"></div>
+        
+        <!-- Header with heart image -->
+        <div class="bg-gradient-to-r from-pink-500 to-red-500 p-6 text-center">
+            <div class="flex justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white heart-beat" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-white mt-2">Love Compatibility Calculator</h1>
+            <p class="text-pink-100">Find out how compatible you are with your crush!</p>
+        </div>
+        
+        <!-- Form -->
+        <div class="p-6">
+            <div class="space-y-4">
+                <!-- Couple photos -->
+                <div class="couple-photos">
+                    <div>
+                        <label for="photo1" class="photo-upload-label">
+                            <img id="photo1-preview" class="photo-preview" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="Your photo">
+                            <span class="text-xs mt-2 text-pink-600">Your Photo</span>
+                        </label>
+                        <input type="file" id="photo1" class="photo-upload" accept="image/*">
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    
+                    <div>
+                        <label for="photo2" class="photo-upload-label">
+                            <img id="photo2-preview" class="photo-preview" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="Their photo">
+                            <span class="text-xs mt-2 text-pink-600">Their Photo</span>
+                        </label>
+                        <input type="file" id="photo2" class="photo-upload" accept="image/*">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                    <input type="text" id="name1" class="w-full px-4 py-2 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500" placeholder="Enter your name">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Your Birthdate</label>
+                    <input type="date" id="dob1" class="w-full px-4 py-2 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Their Name</label>
+                    <input type="text" id="name2" class="w-full px-4 py-2 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500" placeholder="Enter their name">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Their Birthdate</label>
+                    <input type="date" id="dob2" class="w-full px-4 py-2 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
+                </div>
+            </div>
+            
+            <button id="calculate-btn" class="mt-6 w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 px-4 rounded-lg font-semibold shadow-lg hover:from-pink-600 hover:to-red-600 transition duration-300">
+                Calculate Love Percentage
+            </button>
+        </div>
+        
+        <!-- Results -->
+        <div id="results" class="hidden p-6 bg-pink-50 border-t border-pink-200">
+            <div class="text-center">
+                <h2 class="text-xl font-bold text-pink-700">Compatibility Result</h2>
+                
+                <!-- Couple photos in result -->
+                <div class="couple-photos">
+                    <div>
+                        <img id="result-photo1" class="photo-preview" src="" alt="Your photo">
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <img id="result-photo2" class="photo-preview" src="" alt="Their photo">
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex justify-center">
+                    <div class="relative w-48 h-48">
+                        <svg class="w-full h-full" viewBox="0 0 36 36">
+                            <path d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="#eee"
+                                stroke-width="3"
+                                stroke-dasharray="100, 100"
+                            />
+                            <path id="percentage-circle" 
+                                d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="url(#gradient)"
+                                stroke-width="3"
+                                stroke-dasharray="0, 100"
+                                stroke-linecap="round"
+                            />
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#ec4899" />
+                                    <stop offset="100%" stop-color="#ef4444" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="percentage" class="text-3xl font-bold text-pink-700">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        <div id="progress-bar" class="progress-bar h-4 rounded-full bg-gradient-to-r from-pink-500 to-red-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <p id="result-text" class="mt-4 text-pink-700 font-medium"></p>
+                
+                <div id="compatibility-factors" class="mt-4 text-left text-sm text-gray-600 hidden">
+                    <h3 class="font-semibold text-pink-700 mb-2">Compatibility Factors:</h3>
+                    <ul class="space-y-1" id="factors-list">
+                        <!-- Factors will be added here by JavaScript -->
+                    </ul>
+                </div>
+                
+                <!-- Screenshot and share buttons -->
+                <img id="result-screenshot" alt="Love compatibility result">
+                
+                <div class="share-buttons">
+                    <button id="capture-btn" class="bg-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-pink-600 transition duration-300">
+                        Save Result
+                    </button>
+                    <button class="share-button share-facebook" onclick="shareOnFacebook()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/>
+                        </svg>
+                        Share
+                    </button>
+                    <button class="share-button share-twitter" onclick="shareOnTwitter()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        Tweet
+                    </button>
+                    <button class="share-button share-whatsapp" onclick="shareOnWhatsApp()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultsDiv = document.getElementById('results');
+            const percentageElement = document.getElementById('percentage');
+            const progressBar = document.getElementById('progress-bar');
+            const resultText = document.getElementById('result-text');
+            const factorsList = document.getElementById('factors-list');
+            const compatibilityFactors = document.getElementById('compatibility-factors');
+            const heartsContainer = document.getElementById('hearts-container');
+            const photo1Input = document.getElementById('photo1');
+            const photo2Input = document.getElementById('photo2');
+            const photo1Preview = document.getElementById('photo1-preview');
+            const photo2Preview = document.getElementById('photo2-preview');
+            const resultPhoto1 = document.getElementById('result-photo1');
+            const resultPhoto2 = document.getElementById('result-photo2');
+            const captureBtn = document.getElementById('capture-btn');
+            const screenshotImg = document.getElementById('result-screenshot');
+            const calculatorContainer = document.getElementById('calculator-container');
+            
+            // Handle photo uploads
+            photo1Input.addEventListener('change', function(e) {
+                if (e.target.files.length) {
+                    const src = URL.createObjectURL(e.target.files[0]);
+                    photo1Preview.src = src;
+                    resultPhoto1.src = src;
+                }
+            });
+            
+            photo2Input.addEventListener('change', function(e) {
+                if (e.target.files.length) {
+                    const src = URL.createObjectURL(e.target.files[0]);
+                    photo2Preview.src = src;
+                    resultPhoto2.src = src;
+                }
+            });
+            
+            calculateBtn.addEventListener('click', function() {
+                const name1 = document.getElementById('name1').value.trim();
+                const name2 = document.getElementById('name2').value.trim();
+                const dob1 = document.getElementById('dob1').value;
+                const dob2 = document.getElementById('dob2').value;
+                
+                if (!name1 || !name2) {
+                    alert('Please enter both names');
+                    return;
+                }
+                
+                if (!dob1 || !dob2) {
+                    alert('Please select both birthdates');
+                    return;
+                }
+                
+                // Calculate love percentage
+                const percentage = calculateLovePercentage(name1, name2, dob1, dob2);
+                
+                // Show results
+                resultsDiv.classList.remove('hidden');
+                
+                // Animate the percentage display
+                animatePercentage(0, percentage);
+                
+                // Create floating hearts
+                createHearts();
+                
+                // Show compatibility factors
+                showCompatibilityFactors(name1, name2, dob1, dob2, percentage);
+                
+                // Scroll to results
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Capture screenshot
+            captureBtn.addEventListener('click', function() {
+                html2canvas(calculatorContainer, {
+                    backgroundColor: null,
+                    scale: 1,
+                    logging: false,
+                    useCORS: true
+                }).then(canvas => {
+                    screenshotImg.src = canvas.toDataURL('image/png');
+                    screenshotImg.style.display = 'block';
+                    
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.download = 'love-compatibility-result.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            });
+            
+            function calculateLovePercentage(name1, name2, dob1, dob2) {
+                // This is just for fun - not a real calculation!
+                
+                // Name factors
+                const nameLengthFactor = Math.min(100, Math.max(
+                    10, 
+                    (name1.length + name2.length) * 3 + 
+                    (countMatchingLetters(name1, name2) * 5)
+                ));
+                
+                // Birthday factors
+                const date1 = new Date(dob1);
+                const date2 = new Date(dob2);
+                const timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                
+                const ageDiffFactor = Math.min(100, Math.max(
+                    10, 
+                    100 - (Math.abs(date1.getFullYear() - date2.getFullYear()) * 2)
+                ));
+                
+                const zodiacCompatibility = getZodiacCompatibility(date1, date2);
+                
+                // Random factor to make it more "fun"
+                const randomFactor = Math.floor(Math.random() * 21) - 10; // -10 to +10
+                
+                // Calculate final percentage (weighted average)
+                let percentage = Math.min(100, Math.max(
+                    1, 
+                    (nameLengthFactor * 0.4) + 
+                    (ageDiffFactor * 0.3) + 
+                    (zodiacCompatibility * 0.3) + 
+                    randomFactor
+                ));
+                
+                // Round to nearest whole number
+                return Math.round(percentage);
+            }
+            
+            function countMatchingLetters(name1, name2) {
+                // Count how many letters the names have in common
+                const letters1 = name1.toLowerCase().split('');
+                const letters2 = name2.toLowerCase().split('');
+                
+                let matches = 0;
+                const matchedIndices = [];
+                
+                for (let i = 0; i < letters1.length; i++) {
+                    for (let j = 0; j < letters2.length; j++) {
+                        if (letters1[i] === letters2[j] && !matchedIndices.includes(j)) {
+                            matches++;
+                            matchedIndices.push(j);
+                            break;
+                        }
+                    }
+                }
+                
+                return matches;
+            }
+            
+            function getZodiacCompatibility(date1, date2) {
+                // Very simplified zodiac compatibility (just for fun)
+                const signs1 = getZodiacSign(date1);
+                const signs2 = getZodiacSign(date2);
+                
+                // Some made-up compatibility rules
+                if (signs1 === signs2) {
+                    return 70; // Same sign - decent match
+                }
+                
+                // Compatible pairs
+                const compatiblePairs = [
+                    ['aries', 'leo'], ['aries', 'sagittarius'],
+                    ['taurus', 'virgo'], ['taurus', 'capricorn'],
+                    ['gemini', 'libra'], ['gemini', 'aquarius'],
+                    ['cancer', 'scorpio'], ['cancer', 'pisces'],
+                    ['leo', 'aries'], ['leo', 'sagittarius'],
+                    ['virgo', 'taurus'], ['virgo', 'capricorn'],
+                    ['libra', 'gemini'], ['libra', 'aquarius'],
+                    ['scorpio', 'cancer'], ['scorpio', 'pisces'],
+                    ['sagittarius', 'aries'], ['sagittarius', 'leo'],
+                    ['capricorn', 'taurus'], ['capricorn', 'virgo'],
+                    ['aquarius', 'gemini'], ['aquarius', 'libra'],
+                    ['pisces', 'cancer'], ['pisces', 'scorpio']
+                ];
+                
+                for (const pair of compatiblePairs) {
+                    if (
+                        (signs1 === pair[0] && signs2 === pair[1]) ||
+                        (signs1 === pair[1] && signs2 === pair[0])
+                    ) {
+                        return 85; // Compatible signs
+                    }
+                }
+                
+                return 50; // Neutral compatibility
+            }
+            
+            function getZodiacSign(date) {
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                
+                if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return 'aquarius';
+                if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return 'pisces';
+                if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return 'aries';
+                if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return 'taurus';
+                if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return 'gemini';
+                if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return 'cancer';
+                if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return 'leo';
+                if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return 'virgo';
+                if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return 'libra';
+                if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return 'scorpio';
+                if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return 'sagittarius';
+                if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return 'capricorn';
+            }
+            
+            function animatePercentage(start, end) {
+                let current = start;
+                const increment = end > start ? 1 : -1;
+                const timer = setInterval(() => {
+                    current += increment;
+                    percentageElement.textContent = current + '%';
+                    
+                    // Update progress bar
+                    progressBar.style.width = current + '%';
+                    
+                    // Update circle progress
+                    const circle = document.getElementById('percentage-circle');
+                    const circumference = 2 * Math.PI * 15.9155;
+                    const offset = circumference - (current / 100) * circumference;
+                    circle.style.strokeDasharray = circumference;
+                    circle.style.strokeDashoffset = offset;
+                    
+                    // Change text color based on percentage
+                    if (current < 30) {
+                        percentageElement.className = 'text-3xl font-bold text-red-500';
+                        resultText.className = 'mt-4 text-red-500 font-medium';
+                    } else if (current < 60) {
+                        percentageElement.className = 'text-3xl font-bold text-yellow-500';
+                        resultText.className = 'mt-4 text-yellow-500 font-medium';
+                    } else {
+                        percentageElement.className = 'text-3xl font-bold text-pink-700';
+                        resultText.className = 'mt-4 text-pink-700 font-medium';
+                    }
+                    
+                    if (current === end) {
+                        clearInterval(timer);
+                        showResultMessage(end);
+                    }
+                }, 30);
+            }
+            
+            function showResultMessage(percentage) {
+                let message = '';
+                
+                if (percentage < 30) {
+                    message = 'Not a great match... but love can grow!';
+                } else if (percentage < 50) {
+                    message = 'There might be some potential here!';
+                } else if (percentage < 70) {
+                    message = 'Good compatibility! Worth exploring more.';
+                } else if (percentage < 85) {
+                    message = 'Great match! You two could be perfect for each other.';
+                } else {
+                    message = 'Incredible match! Soulmates alert! 💖';
+                }
+                
+                resultText.textContent = message;
+            }
+            
+            function showCompatibilityFactors(name1, name2, dob1, dob2, percentage) {
+                compatibilityFactors.classList.remove('hidden');
+                factorsList.innerHTML = '';
+                
+                const date1 = new Date(dob1);
+                const date2 = new Date(dob2);
+                
+                // Name compatibility
+                const nameMatch = countMatchingLetters(name1, name2);
+                const nameCompatibility = Math.min(100, (name1.length + name2.length) * 3 + (nameMatch * 5));
+                
+                // Age difference
+                const ageDiff = Math.abs(date1.getFullYear() - date2.getFullYear());
+                const ageCompatibility = 100 - (ageDiff * 2);
+                
+                // Zodiac signs
+                const sign1 = getZodiacSign(date1);
+                const sign2 = getZodiacSign(date2);
+                
+                // Create list items
+                addFactor(`Name Compatibility: ${nameMatch} matching letters`, nameCompatibility);
+                addFactor(`Age Compatibility: ${ageDiff} year difference`, ageCompatibility);
+                addFactor(`Zodiac Match: ${capitalizeFirstLetter(sign1)} & ${capitalizeFirstLetter(sign2)}`, getZodiacCompatibility(date1, date2));
+                
+                // Add a fun random factor
+                const randomFactors = [
+                    'Shared interests potential',
+                    'Communication style match',
+                    'Emotional connection',
+                    'Physical chemistry',
+                    'Long-term potential',
+                    'Adventure compatibility'
+                ];
+                
+                const randomFactorName = randomFactors[Math.floor(Math.random() * randomFactors.length)];
+                const randomFactorValue = Math.floor(Math.random() * 30) + 50;
+                
+                addFactor(randomFactorName, randomFactorValue);
+            }
+            
+            function addFactor(name, value) {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = name;
+                
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'font-semibold';
+                valueSpan.textContent = Math.min(100, Math.max(0, value)) + '%';
+                
+                li.appendChild(nameSpan);
+                li.appendChild(valueSpan);
+                factorsList.appendChild(li);
+            }
+            
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            function createHearts() {
+                // Clear existing hearts
+                heartsContainer.innerHTML = '';
+                
+                // Create 20 floating hearts
+                for (let i = 0; i < 20; i++) {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart text-pink-500';
+                    heart.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                        </svg>
+                    `;
+                    
+                    // Random position at bottom
+                    const left = Math.random() * 100;
+                    heart.style.left = `${left}%`;
+                    heart.style.bottom = '-24px';
+                    
+                    // Random animation duration
+                    const duration = 3 + Math.random() * 3;
+                    heart.style.animationDuration = `${duration}s`;
+                    
+                    // Random delay
+                    heart.style.animationDelay = `${Math.random() * 2}s`;
+                    
+                    heartsContainer.appendChild(heart);
+                }
+            }
+            
+            // Share functions
+            window.shareOnFacebook = function() {
+                const url = encodeURIComponent(window.location.href);
+                const text = encodeURIComponent(`Check out our love compatibility result! ${percentageElement.textContent}% match! ❤️`);
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+            };
+            
+            window.shareOnTwitter = function() {
+                const text = encodeURIComponent(`Our love compatibility is ${percentageElement.textContent}%! ❤️ Check yours too!`);
+                window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+            };
+            
+            window.shareOnWhatsApp = function() {
+                const text = encodeURIComponent(`Our love compatibility is ${percentageElement.textContent}%! ❤️ Check yours too!`);
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+            };
+        });
+    </script>
+</body>
+</html>
